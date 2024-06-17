@@ -3,8 +3,11 @@ import lxml
 import pymysql
 import requests
 import pandas as pd
+import re 
 
 url = "https://cuspide.com/100-mas-vendidos/"
+url_dolar = "https://www.xe.com/es/currencyconverter/convert/?Amount=1&From=ARS&To=USD"
+response_dolar = requests.get(url_dolar)
 response = requests.get(url)
 
 libros = bs(response.content, "html.parser")
@@ -16,6 +19,13 @@ titulo_libros = []
 
 url_error = []
 titulo_error = []
+datos_dolar = bs(response_dolar.content, "html.parser")
+valor_dolar = datos_dolar.find(class_="sc-ac62c6d1-0 GwlFu")
+precio_dolar = valor_dolar.get_text(strip= True)
+limpieza_precio_dolar = precio_dolar.split(" ")
+limpieza_precio_dolar = limpieza_precio_dolar[3]
+
+
 
 for i , j in zip(precio,titulo):
     try:
@@ -30,7 +40,10 @@ for i , j in zip(precio,titulo):
         url_error.append(url_)
         titulo_error.append(titulo_)
 
-print(precio_libros)
-print(url_libros)
-print(url_error)
-print(titulo_libros)
+
+
+dic = dict(Titulo = titulo_libros, Url = url_libros, Precio = precio_libros)
+dic_errores = dict(Titulo = titulo_error, Url = url_error)
+df_errores = pd.DataFrame(dic_errores)
+df  = pd.DataFrame(dic)
+print(limpieza_precio_dolar)
